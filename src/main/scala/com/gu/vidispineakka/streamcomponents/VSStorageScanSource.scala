@@ -2,7 +2,6 @@ package com.gu.vidispineakka.streamcomponents
 import akka.actor.ActorSystem
 import akka.stream.stage.{AbstractOutHandler, GraphStage, GraphStageLogic}
 import akka.stream.{Attributes, Materializer, Outlet, SourceShape}
-import com.softwaremill.sttp.Uri
 import org.slf4j.LoggerFactory
 import com.gu.vidispineakka.vidispine.VSCommunicator.OperationType
 import com.gu.vidispineakka.vidispine.{VSCommunicator, VSFile}
@@ -10,7 +9,7 @@ import com.gu.vidispineakka.vidispine.{VSCommunicator, VSFile}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class VSStorageScanSource(storageId:Option[String], fileState:Option[String], comm:VSCommunicator, pageSize:Int=10, maxRetries:Int=5)(implicit val actorSystem: ActorSystem, mat:Materializer, ec:ExecutionContext) extends GraphStage[SourceShape[VSFile]]{
+class VSStorageScanSource(storageId:Option[String], fileState:Option[String], pageSize:Int=10, maxRetries:Int=5)(implicit val actorSystem: ActorSystem, mat:Materializer, ec:ExecutionContext, comm:VSCommunicator) extends GraphStage[SourceShape[VSFile]]{
   private final val out:Outlet[VSFile] = Outlet("VSStorageScanSource.out")
 
   override def shape: SourceShape[VSFile] = SourceShape.of(out)
@@ -49,20 +48,20 @@ class VSStorageScanSource(storageId:Option[String], fileState:Option[String], co
     }
 
     setHandler(out, new AbstractOutHandler {
+      val completedCb = getAsyncCallback[Option[VSFile]]({
+        case Some(vsfile)=>
+          logger.info(vsfile.toString)
+          push(out, vsfile)
+          listQueue = listQueue.tail
+        case None=>
+          complete(out)
+      })
+
+      val failedCb = getAsyncCallback[Throwable](err=>failStage(err))
+
       override def onPull(): Unit = {
-        val completedCb = getAsyncCallback[Option[VSFile]]({
-          case Some(vsfile)=>
-            logger.info(vsfile.toString)
-            push(out, vsfile)
-            listQueue = listQueue.tail
-          case None=>
-            complete(out)
-        })
-
-        val failedCb = getAsyncCallback[Throwable](err=>failStage(err))
-
         if(listQueue.isEmpty) {
-          logger.info(s"Getting next page of results...")
+          logger.debug(s"Getting next page of results...")
           getNextPage().onComplete({
             case Failure(err) =>
               logger.error("Could not list files from storage: ", err)

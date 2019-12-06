@@ -24,5 +24,23 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
   "org.specs2" %% "specs2-core" % "4.6.0" % Test,
   "org.specs2" %% "specs2-mock" % "4.6.0" % Test,
+)
 
+// POM settings for Sonatype
+organization := "com.gu"
+homepage := Some(url("https://github.com/guardian/akka-vidispine-components"))
+scmInfo := Some(ScmInfo(url("https://github.com/guardian/akka-vidispine-components"), "git@github.com:guardian/akka-vidispine-components.git"))
+developers := List(Developer("andyg",
+  "Andy Gallagher",
+  "andy.gallagher@theguardian.com",
+  url("https://github.com/fredex42")))
+licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
+publishMavenStyle := true
+
+// Add sonatype repository settings
+publishTo := Some(
+  if (isSnapshot.value)
+    Opts.resolver.sonatypeSnapshots
+  else
+    Opts.resolver.sonatypeStaging
 )
