@@ -42,7 +42,7 @@ class VSCommunicator(vsUri:Uri, plutoUser:String, plutoPass:String, maxAttempts:
     * @param queryParams String->string map of query params
     * @return a Future, with a response containing a stream source to read the body.
     */
-  protected def sendGeneric(operation:OperationType.Value, uriPath:String, maybeXmlString:Option[String], headers:Map[String,String], queryParams:Map[String,String]):Future[Response[Source[ByteString, Any]]] = {
+  def sendGeneric(operation:OperationType.Value, uriPath:String, maybeXmlString:Option[String], headers:Map[String,String], queryParams:Map[String,String]):Future[Response[Source[ByteString, Any]]] = {
     val bs = maybeXmlString.map(xmlString=>ByteString(xmlString,"UTF-8"))
 
     val uriWithPath = vsUri.path(uriPath)

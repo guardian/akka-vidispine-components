@@ -16,6 +16,17 @@ case class VSLazyItem (itemId:String, lookedUpMetadata:Map[String,VSMetadataEntr
   private val logger = LoggerFactory.getLogger(getClass)
 
   /**
+    * retrieve the entire raw metadata document. Normally it's more useful to use getMoreMetadata and the get/getSingle methods
+    * to interrogate media, this is included in case you want to lift the _entire_ metadata in-bulk and push it somewhere.
+    * the request is retried on 50x errors as per any other calls.
+    * @param comm implicitly provided VSCommunicator describing the vidispine instance to target
+    * @param mat implicitly provided ActorMaterializer
+    * @return a Future, contianing either an HttpError instance or the string of the metadata
+    */
+  def getFullMetadataDoc(implicit  comm:VSCommunicator, mat:Materializer):Future[Either[HttpError,String]] =
+    comm.request(OperationType.GET,s"/API/item/$itemId/metadata",None,Map("Accept"->"application/xml"))
+
+  /**
     * looks up the given field list and returns a new object with their values set in `lookedUpMetadata`.
     * since this goes over the network, it is a future and may fail; a Left is returned in this case.
     * @param fieldList metadata fields to look up
