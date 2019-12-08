@@ -25,7 +25,7 @@ class VSStorageScanSourceSpec extends Specification with Mockito {
   "VSStorageScanSource" should {
     "build and yield VSFile objects from incoming XML" in new AkkaTestkitSpecs2Support {
       implicit val mat:Materializer = ActorMaterializer.create(system)
-      val mockedCommunicator = mock[VSCommunicator]
+      implicit val mockedCommunicator = mock[VSCommunicator]
       val sampleXml = getTestData("filescan.xml")
       mockedCommunicator.request(any, any,any,any,any,any)(any,any) returns Future(Right(sampleXml)) thenReturns Future(Right(getTestData("emptyscan.xml")))
 
@@ -33,7 +33,7 @@ class VSStorageScanSourceSpec extends Specification with Mockito {
 
       val graph = GraphDSL.create(sinkFac) { implicit builder => sink =>
         import akka.stream.scaladsl.GraphDSL.Implicits._
-        val src = builder.add(new VSStorageScanSource(Some("VX-1"), None, mockedCommunicator))
+        val src = builder.add(new VSStorageScanSource(Some("VX-1"), None ))
 
         src ~> sink
         ClosedShape
