@@ -1,10 +1,10 @@
 name := "akka-vidispine-components"
 
-version := "1.0-SNAPSHOT"
+version := "0.2-SNAPSHOT"
 
 scalaVersion := "2.12.10"
 
-val akkaVersion = "2.5.22"
+val akkaVersion = "2.5.23"
 val circeVersion = "0.9.3"
 val slf4jVersion = "1.7.25"
 
@@ -36,6 +36,7 @@ developers := List(Developer("andyg",
   url("https://github.com/fredex42")))
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 publishMavenStyle := true
+publishConfiguration := publishConfiguration.value.withOverwrite(true)
 
 // Add sonatype repository settings
 publishTo := Some(
