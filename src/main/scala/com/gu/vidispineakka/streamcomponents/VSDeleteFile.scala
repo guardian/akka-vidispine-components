@@ -34,7 +34,7 @@ class VSDeleteFile(reallyDelete:Boolean)(implicit comm:VSCommunicator, mat:Mater
       override def onPush(): Unit = {
         val elem = grab(in)
 
-        val url = s"/API/file/${elem.vsid}"
+        val url = s"/API/storage/file/${elem.vsid}"
         val requestFuture = if(reallyDelete) {
           logger.info(s"Sending DELETE request to $url...")
           comm.request(OperationType.DELETE, url, None, Map(), Map())
