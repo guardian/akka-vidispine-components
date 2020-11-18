@@ -34,7 +34,7 @@ Performs an item search, paginates/caches internally and yields the results as a
 For example:
 
 ```scala
-import com.gu.vidispineakka.streamcomponents.VSItemSearchSource
+import com.gu.vidispineakka.streamcomponents.VSGenericSearchSource
 import com.gu.vidispineakka.vidispine.VSCommunicator
 import akka.stream.scaladsl.GraphDSL._
 import akka.stream.scaladsl.GraphDSL
@@ -44,7 +44,7 @@ val interestingMetadataFields = Seq("title","originalFormat","duration")  //etc.
 val xmlSearchDoc = <ItemSearchDocument xmlns="http://xml.vidispine.com/schema/vidispine">.....</ItemSearchDocument>
 
 GraphDSL.create() { implicit builder=>
-  val src = builder.add(new VSItemSearchSource(interestingMetadataFields, xmlSearchDoc.toString, includeShape=true))
+  val src = builder.add(new VSGenericSearchSource(interestingMetadataFields, xmlSearchDoc.toString, includeShape=true))
   SourceShape(src.out)
 }
 ```

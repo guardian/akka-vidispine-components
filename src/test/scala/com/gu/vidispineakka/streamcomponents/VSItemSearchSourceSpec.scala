@@ -33,7 +33,7 @@ class VSItemSearchSourceSpec extends Specification with Mockito{
       val graph = GraphDSL.create(sinkFactory) { implicit builder=> sink=>
         import akka.stream.scaladsl.GraphDSL.Implicits._
 
-        val src = builder.add(new VSItemSearchSource(Seq("field1","field2"),"mock-search-doc",true))
+        val src = builder.add(new VSGenericSearchSource(Seq("field1","field2"),"mock-search-doc",true))
         src ~> sink
         ClosedShape
       }
@@ -60,7 +60,7 @@ class VSItemSearchSourceSpec extends Specification with Mockito{
       val graph = GraphDSL.create(sinkFactory) { implicit builder=> sink=>
         import akka.stream.scaladsl.GraphDSL.Implicits._
 
-        val src = builder.add(new VSItemSearchSource(Seq("field1","field2"),"mock-search-doc",true, retryDelay = 1.second))
+        val src = builder.add(new VSGenericSearchSource(Seq("field1","field2"),"mock-search-doc",true, retryDelay = 1.second))
         src ~> sink
         ClosedShape
       }
