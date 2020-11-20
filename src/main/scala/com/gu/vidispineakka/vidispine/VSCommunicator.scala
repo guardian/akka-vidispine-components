@@ -107,7 +107,7 @@ class VSCommunicator(vsUri:Uri, plutoUser:String, plutoPass:String, maxAttempts:
           logger.debug("Send succeeded")
           consumeSource(source).map(data => Right(data))
         case Left(errorString) =>
-          if (response.code == 502 || response.code == 503 || response.code == 500) {
+          if (response.code == 502 || response.code == 503 || response.code==504 || response.code == 500) {
             val delayTime = if (attempt > 6) 60 else 2 ^ attempt
             logger.warn(s"Request body: $errorString")
             logger.warn(s"Received ${response.code} from Vidispine. Retrying in $delayTime seconds.")
