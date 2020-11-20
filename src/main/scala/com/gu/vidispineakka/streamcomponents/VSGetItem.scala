@@ -64,22 +64,33 @@ class VSGetItem(fieldList:Seq[String], includeShapes:Boolean = false)(implicit c
               Future(item)
             }
 
-            itemWithShapesFut.flatMap(_.getMoreMetadata(fieldList).map({
-              case Left(metadataError)=>
-                logger.error(s"Could not get metadata for item ${fileItemMembership.itemId}: $metadataError")
-                failedCb.invoke(new RuntimeException("Could not lookup metadata"))
-              case Right(updatedItem)=>
-                logger.debug(s"Looked up metadata for item ${updatedItem.itemId}")
-                completedCb.invoke((elem, Some(updatedItem)))
-            }).recover({
-              case err:NotFoundError=>
+            itemWithShapesFut
+              .flatMap(_.getMoreMetadata(fieldList)
+                .map({
+                  case Left(metadataError)=>
+                    logger.error(s"Could not get metadata for item ${fileItemMembership.itemId}: $metadataError")
+                    metadataError.httpError match {
+                      case None=>
+                        failedCb.invoke(new RuntimeException("Could not lookup metadata"))
+                      case Some(httpError)=>
+                        if(httpError.errorCode==404){
+                          completedCb.invoke((elem, None))
+                        } else {
+                          failedCb.invoke(new RuntimeException("Could not lookup metadata"))
+                        }
+                    }
+                  case Right(updatedItem)=>
+                    logger.debug(s"Looked up metadata for item ${updatedItem.itemId}")
+                    completedCb.invoke((elem, Some(updatedItem)))
+                })
+              ).recover({
+              case _:NotFoundError=>
                 logger.error(s"No item found for ${fileItemMembership.itemId}")
                 completedCb.invoke((elem, None))
               case err:Throwable=>
                 logger.error(s"Get metadata crashed for item ${fileItemMembership.itemId}")
                 failedCb.invoke(err)
-            }))
-
+            })
           case None=>
             logger.warn(s"Can't look up item metadata for file ${elem.vsid} as it is not a member of any item")
             completedCb.invoke((elem, None))
