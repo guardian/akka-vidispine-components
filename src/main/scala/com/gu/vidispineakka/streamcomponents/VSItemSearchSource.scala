@@ -14,7 +14,7 @@ class VSItemSearchSource(metadataFields:Seq[String],
                          pageSize:Int=100,
                          retryDelay:FiniteDuration=30.seconds)
                         (override implicit val comm:VSCommunicator, actorSystem: ActorSystem, mat:Materializer)
-  extends VSGenericSearchSource(metadataFields, searchDoc, includeShape, pageSize, retryDelay, searchType = "item")(comm, actorSystem, mat) {
+  extends VSGenericSearchSource[VSLazyItem](metadataFields, searchDoc, includeShape, pageSize, retryDelay, searchType = "item")(comm, actorSystem, mat) {
 
   def processParsedXML(parsedData:Elem):Seq[VSLazyItem] = (parsedData \ "item").map(VSLazyItem.fromXmlSearchStanza)
 }

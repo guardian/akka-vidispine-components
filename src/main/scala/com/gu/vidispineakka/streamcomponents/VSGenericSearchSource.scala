@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.{Attributes, Materializer, Outlet, SourceShape}
 import akka.stream.stage.{AbstractOutHandler, AsyncCallback, GraphStage, GraphStageLogic}
 import org.slf4j.LoggerFactory
-import com.gu.vidispineakka.vidispine.{VSCommunicator, VSFile, VSLazyItem}
+import com.gu.vidispineakka.vidispine.{VSCommunicator, VSFile}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
@@ -23,20 +23,19 @@ content – Comma-separated list of the types of content to retrieve, possible v
   * @param actorSystem
   * @param mat
   */
-abstract class VSGenericSearchSource(metadataFields:Seq[String], searchDoc:String, includeShape:Boolean, pageSize:Int=100, retryDelay:FiniteDuration=30.seconds, searchType:String="item")
+abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:String, includeShape:Boolean, pageSize:Int=100, retryDelay:FiniteDuration=30.seconds, searchType:String="item")
                            (implicit val comm:VSCommunicator, actorSystem: ActorSystem, mat:Materializer)
-  extends GraphStage[SourceShape[VSLazyItem]] {
+  extends GraphStage[SourceShape[T]] {
 
-  private val out:Outlet[VSLazyItem] = Outlet.create("VSItemSearchSource.out")
-
-  override def shape: SourceShape[VSLazyItem] = SourceShape.of(out)
+  private val out:Outlet[T] = Outlet.create("VSItemSearchSource.out")
+  override def shape: SourceShape[T] = SourceShape.of(out)
 
   /**
     * this must be implemented by a subclass, it translates the XML data into a domain object
     * @param content
     * @return
     */
-  def processParsedXML(content:Elem):Seq[VSLazyItem]
+  def processParsedXML(content:Elem):Seq[T]
 
   def getNextPage(startAt:Int) = {
     val uri = s"/API/$searchType;first=$startAt;number=$pageSize"
@@ -56,7 +55,7 @@ abstract class VSGenericSearchSource(metadataFields:Seq[String], searchDoc:Strin
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
     private val logger = LoggerFactory.getLogger(getClass)
 
-    private var queue:Seq[VSLazyItem] = Seq()
+    private var queue:Seq[T] = Seq()
     private var currentItem = 1 //VS starts enumerating from 1 not 0
 
     /**
@@ -67,7 +66,7 @@ abstract class VSGenericSearchSource(metadataFields:Seq[String], searchDoc:Strin
       * @param completedCb
       */
 
-    def processPull(failedCb:AsyncCallback[Throwable], newItemCb:AsyncCallback[VSLazyItem], completedCb:AsyncCallback[Unit]):Unit = {
+    def processPull(failedCb:AsyncCallback[Throwable], newItemCb:AsyncCallback[T], completedCb:AsyncCallback[Unit]):Unit = {
       if (queue.nonEmpty) {
         logger.debug(s"Serving next item from queue")
         push(out, queue.head)
@@ -97,7 +96,7 @@ abstract class VSGenericSearchSource(metadataFields:Seq[String], searchDoc:Strin
 
     setHandler(out, new AbstractOutHandler {
       val failedCb = createAsyncCallback[Throwable](err=>failStage(err))
-      val newItemCb = createAsyncCallback[VSLazyItem](item=>push(out, item))
+      val newItemCb = createAsyncCallback[T](item=>push(out, item))
       val completedCb = createAsyncCallback[Unit](_=>complete(out))
 
       override def onPull(): Unit = {
