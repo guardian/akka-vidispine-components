@@ -11,10 +11,11 @@ import scala.xml.Elem
 class VSCollectionSearchSource(metadataFields:Seq[String],
                                searchDoc:String,
                                includeShape:Boolean,
+                               includeAllMetadata:Boolean,
                                pageSize:Int=100,
                                retryDelay:FiniteDuration=30.seconds)
                               (override implicit val comm:VSCommunicator, actorSystem: ActorSystem, mat:Materializer)
-  extends VSGenericSearchSource[VSLazyItem](metadataFields, searchDoc, includeShape, pageSize, retryDelay, searchType = "collection")(comm, actorSystem, mat) {
+  extends VSGenericSearchSource[VSLazyItem](metadataFields, searchDoc, includeShape, includeAllMetadata, pageSize, retryDelay, searchType = "collection")(comm, actorSystem, mat) {
 
   //yeah, so this shouldn't really be a VSLazyItem but I have not got time to go through _all_ the code and make the
   //base search source fully generic

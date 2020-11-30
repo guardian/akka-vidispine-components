@@ -23,7 +23,7 @@ content – Comma-separated list of the types of content to retrieve, possible v
   * @param actorSystem
   * @param mat
   */
-abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:String, includeShape:Boolean, pageSize:Int=100, retryDelay:FiniteDuration=30.seconds, searchType:String="item")
+abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:String, includeShape:Boolean, includeAllMetadata:Boolean=false, pageSize:Int=100, retryDelay:FiniteDuration=30.seconds, searchType:String="item")
                            (implicit val comm:VSCommunicator, actorSystem: ActorSystem, mat:Materializer)
   extends GraphStage[SourceShape[T]] {
 
@@ -42,12 +42,19 @@ abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:St
 
     val contentParam = Seq(
       if(includeShape) Some("shape") else None,
-      if(metadataFields.nonEmpty) Some("metadata") else None,
+      if(metadataFields.nonEmpty || includeAllMetadata) Some("metadata") else None,
     ).collect({case Some(elem)=>elem}).mkString(",")
 
-    val fieldsParam = metadataFields.mkString(",")
+    val fieldsParam = if(metadataFields.nonEmpty) Some(metadataFields.mkString(",")) else None
+    val queryParams = Seq("content"->Some(contentParam),"field"->fieldsParam)
+      .collect({case (key, Some(value))=>(key->value)})
+      .toMap
 
-    comm.request(VSCommunicator.OperationType.PUT, uri, Some(searchDoc), Map("Accept"->"application/xml"), Map("content"->contentParam,"field"->fieldsParam)).map(_.map(xmlString=>{
+    comm.request(VSCommunicator.OperationType.PUT, uri,
+      Some(searchDoc),
+      Map("Accept"->"application/xml"),
+      queryParams
+    ).map(_.map(xmlString=>{
       processParsedXML(XML.loadString(xmlString))
     }))
   }
