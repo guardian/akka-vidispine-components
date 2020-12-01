@@ -66,13 +66,20 @@ abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:St
     private var currentItem = 1 //VS starts enumerating from 1 not 0
 
     /**
+      * implicit conversion from a lambda function to a Runnable (see https://stackoverflow.com/questions/3073677/implicit-conversion-to-runnable)
+      * this is used for actorSystem.scheduler.scheduleOnce, below
+      * @param fun lambda function to execute
+      * @return the Runnable object
+      */
+    implicit def funToRunnable(fun: () => Unit) = new Runnable() { def run() = fun() }
+
+    /**
       * either services the request from the queue or calls out to VS for more data, refills the queue and processes that.
       * re-runs after a 30s delay (trigged through ActorSystem scheduler) if an error is returned from VS.
       * @param failedCb
       * @param newItemCb
       * @param completedCb
       */
-
     def processPull(failedCb:AsyncCallback[Throwable], newItemCb:AsyncCallback[T], completedCb:AsyncCallback[Unit]):Unit = {
       if (queue.nonEmpty) {
         logger.debug(s"Serving next item from queue")

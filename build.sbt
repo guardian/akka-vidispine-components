@@ -5,23 +5,25 @@ version := "0.7"
 scalaVersion := "2.12.10"
 
 val akkaVersion = "2.5.23"
-val circeVersion = "0.9.3"
+val circeVersion = "0.13.0"
 val slf4jVersion = "1.7.25"
+val sttpVersion = "1.7.2"
+
+crossScalaVersions := List("2.12.10","2.13.4")
 
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-generic" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
-  "io.circe" %% "circe-java8" % circeVersion,
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   "com.typesafe.akka" %% "akka-agent" % akkaVersion,
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
   "org.slf4j" % "slf4j-api" % slf4jVersion,
-  "com.softwaremill.sttp" %% "core" % "0.0.20",
-  "com.softwaremill.sttp" %% "async-http-client-backend-future" % "0.0.20",
+  "com.softwaremill.sttp" %% "core" % sttpVersion,
+  "com.softwaremill.sttp" %% "async-http-client-backend-future" % sttpVersion,
   "org.asynchttpclient" % "async-http-client" % "2.0.37",
-  "com.softwaremill.sttp" %% "akka-http-backend" % "0.0.20",
-  "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
+  "com.softwaremill.sttp" %% "akka-http-backend" % sttpVersion,
+  "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
   "org.specs2" %% "specs2-core" % "4.6.0" % Test,
   "org.specs2" %% "specs2-mock" % "4.6.0" % Test,
 )
