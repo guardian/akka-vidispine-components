@@ -20,8 +20,8 @@ class VSCommunicatorSpec extends Specification with Mockito{
 
       val mockedSendGeneric = mock[(OperationType.Value, String,Option[String],Map[String,String],Map[String,String])=>Future[Response[Source[ByteString, Any]]]]
       mockedSendGeneric.apply(any,any,any,any,any) returns
-        Future(Response[Source[ByteString, Any]](Left("Timeout"),503,scala.collection.immutable.Seq[(String,String)](),List())) thenReturns
-        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("eventual content"))),200,scala.collection.immutable.Seq[(String,String)](),List()))
+        Future(Response[Source[ByteString, Any]](Left("Timeout"),503,"test timeout")) thenReturns
+        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("eventual content"))),200,"ok"))
 
       val comm = new VSCommunicator(uri"http://test-server.org","user","password") {
         override def sendGeneric(operation: VSCommunicator.OperationType.Value, uriPath: String, maybeXmlString: Option[String], headers: Map[String, String], queryParams: Map[String, String]): Future[Response[Source[ByteString, Any]]] =
@@ -38,8 +38,8 @@ class VSCommunicatorSpec extends Specification with Mockito{
 
       val mockedSendGeneric = mock[(OperationType.Value, String,Option[String],Map[String,String],Map[String,String])=>Future[Response[Source[ByteString, Any]]]]
       mockedSendGeneric.apply(any,any,any,any,any) returns
-        Future(Response[Source[ByteString, Any]](Left("Timeout"),500,scala.collection.immutable.Seq[(String,String)](),List())) thenReturns
-        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("eventual content"))),200,scala.collection.immutable.Seq[(String,String)](),List()))
+        Future(Response[Source[ByteString, Any]](Left("Timeout"),500,"test internal server error")) thenReturns
+        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("eventual content"))),200,"ok"))
 
       val comm = new VSCommunicator(uri"http://test-server.org","user","password") {
         override def sendGeneric(operation: VSCommunicator.OperationType.Value, uriPath: String, maybeXmlString: Option[String], headers: Map[String, String], queryParams: Map[String, String]): Future[Response[Source[ByteString, Any]]] =
@@ -56,8 +56,8 @@ class VSCommunicatorSpec extends Specification with Mockito{
 
       val mockedSendGeneric = mock[(OperationType.Value, String,Option[String],Map[String,String],Map[String,String])=>Future[Response[Source[ByteString, Any]]]]
       mockedSendGeneric.apply(any,any,any,any,any) returns
-        Future(Response[Source[ByteString, Any]](Left("Timeout"),502,scala.collection.immutable.Seq[(String,String)](),List())) thenReturns
-        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("eventual content"))),200,scala.collection.immutable.Seq[(String,String)](),List()))
+        Future(Response[Source[ByteString, Any]](Left("Timeout"),502,"test timeout")) thenReturns
+        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("eventual content"))),200,"ok"))
 
       val comm = new VSCommunicator(uri"http://test-server.org","user","password") {
         override def sendGeneric(operation: VSCommunicator.OperationType.Value, uriPath: String, maybeXmlString: Option[String], headers: Map[String, String], queryParams: Map[String, String]): Future[Response[Source[ByteString, Any]]] =
@@ -74,8 +74,8 @@ class VSCommunicatorSpec extends Specification with Mockito{
 
       val mockedSendGeneric = mock[(OperationType.Value, String,Option[String],Map[String,String],Map[String,String])=>Future[Response[Source[ByteString, Any]]]]
       mockedSendGeneric.apply(any,any,any,any,any) returns
-        Future(Response[Source[ByteString, Any]](Left("Bad data"),400,scala.collection.immutable.Seq[(String,String)](),List())) thenReturns
-        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("eventual content"))),200,scala.collection.immutable.Seq[(String,String)](),List()))
+        Future(Response[Source[ByteString, Any]](Left("Bad data"),400,"bad data")) thenReturns
+        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("eventual content"))),200,"ok"))
 
       val comm = new VSCommunicator(uri"http://test-server.org","user","password") {
         override def sendGeneric(operation: VSCommunicator.OperationType.Value, uriPath: String, maybeXmlString: Option[String], headers: Map[String, String], queryParams: Map[String, String]): Future[Response[Source[ByteString, Any]]] =
@@ -92,7 +92,7 @@ class VSCommunicatorSpec extends Specification with Mockito{
 
       val mockedSendGeneric = mock[(OperationType.Value, String,Option[String],Map[String,String],Map[String,String])=>Future[Response[Source[ByteString, Any]]]]
       mockedSendGeneric.apply(any,any,any,any,any) returns
-        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("my content"))),200,scala.collection.immutable.Seq[(String,String)](),List()))
+        Future(Response[Source[ByteString, Any]](Right(Source.single(ByteString("my content"))),200,"ok"))
 
       val comm = new VSCommunicator(uri"http://test-server.org","user","password") {
         override def sendGeneric(operation: VSCommunicator.OperationType.Value, uriPath: String, maybeXmlString: Option[String], headers: Map[String, String], queryParams: Map[String, String]): Future[Response[Source[ByteString, Any]]] =

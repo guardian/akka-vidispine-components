@@ -1,6 +1,6 @@
 name := "akka-vidispine-components"
 
-version := "0.8"
+version := "0.9-SNAPSHOT"
 
 scalaVersion := "2.12.10"
 

@@ -11,19 +11,31 @@ import scala.util.{Failure, Success}
 import scala.xml.{Elem, XML}
 import scala.concurrent.duration._
 
-/*
-content – Comma-separated list of the types of content to retrieve, possible values are metadata, uri, shape, poster, thumbnail, access, merged-access, external.
- */
 /**
-  *
-  * @param searchDoc
-  * @param includeShape
-  * @param pageSize
-  * @param comm
-  * @param actorSystem
-  * @param mat
+  * Base class for implementing Vidispine searches. VSItemSearchSource and VSCollectionSearchSource both derive from this;
+  * if you want to perform custom processing on the data that comes back from the server, then extend this class and
+  * implement the `processParsedXML` method.
+  * This uses VSCommunicator internally, which in turn uses Akka HTTP which requires an ActorSystem and Materializer to
+  * be in implicit scope.
+  * @param metadataFields include these metadata fields.  The search is performed with the ?field= parameter and ?content=metadata
+  * @param searchDoc string representing an XML ItemSearchDocument to send to the server
+  * @param includeShape include shape adata for items. The search is performed with the ?content=shape parameter. This works
+  *                     in conjunection with metadata
+  * @param includeAllMetadata include ALL metadata, not just ones from metadataFields. The search is performed with ?content=metadata
+  *                           and no ?field= parameter
+  * @param customStartPoint start from this record number. Defaults to 1 (the first record). Must be a positive integer that
+  *                         is 1 or greater. Passed to the server as the `from` parameter
+  * @param pageSize retrieve this many records in a page. Passed to the server as the `number` parameter. Defaults to 100
+  * @param retryDelay on error, wait this long before delay. Defaults to 30 seconds.
+  * @param searchType indicates the endpoint to search, either 'item' or 'collection'. Defaults to 'item'
+  * @param comm implicitly provided VSCommunicator
+  * @param actorSystem implicitly provided ActorSystem
+  * @param mat implicitly provided Materializer
+  * @tparam T the type of the domain object that is expected to be returned from processParsedXML.
   */
-abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:String, includeShape:Boolean, includeAllMetadata:Boolean=false, pageSize:Int=100, retryDelay:FiniteDuration=30.seconds, searchType:String="item")
+abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:String, includeShape:Boolean,
+                                        includeAllMetadata:Boolean=false, customStartPoint:Int=1, pageSize:Int=100,
+                                        retryDelay:FiniteDuration=30.seconds, searchType:String="item")
                            (implicit val comm:VSCommunicator, actorSystem: ActorSystem, mat:Materializer)
   extends GraphStage[SourceShape[T]] {
 
@@ -32,8 +44,8 @@ abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:St
 
   /**
     * this must be implemented by a subclass, it translates the XML data into a domain object
-    * @param content
-    * @return
+    * @param content Scala XML element representing the root of the returned XML from the server
+    * @return a sequence of one or more domain objects of type T
     */
   def processParsedXML(content:Elem):Seq[T]
 
@@ -63,7 +75,7 @@ abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:St
     private val logger = LoggerFactory.getLogger(getClass)
 
     private var queue:Seq[T] = Seq()
-    private var currentItem = 1 //VS starts enumerating from 1 not 0
+    private var currentItem = customStartPoint //VS starts enumerating from 1 not 0
 
     val failedCb = createAsyncCallback[Throwable](err=>failStage(err))
     val newItemCb = createAsyncCallback[T](item=>push(out, item))
