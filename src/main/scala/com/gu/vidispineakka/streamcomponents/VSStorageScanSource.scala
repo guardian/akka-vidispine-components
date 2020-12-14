@@ -20,6 +20,17 @@ class VSStorageScanSource(storageId:Option[String], fileState:Option[String], pa
     private var listQueue:Seq[VSFile] = Seq()
     private var ctr=0
 
+    val completedCb = getAsyncCallback[Option[VSFile]]({
+      case Some(vsfile)=>
+        logger.info(vsfile.toString)
+        push(out, vsfile)
+        listQueue = listQueue.tail
+      case None=>
+        complete(out)
+    })
+
+    val failedCb = getAsyncCallback[Throwable](err=>failStage(err))
+    
     def getNextPage(retryIdx:Int=0):Future[Either[String,Seq[VSFile]]] = {
       val baseUrl = storageId match {
         case Some(actualStorageId)=>s"/API/storage/$actualStorageId/file;includeItem=true"
@@ -48,17 +59,6 @@ class VSStorageScanSource(storageId:Option[String], fileState:Option[String], pa
     }
 
     setHandler(out, new AbstractOutHandler {
-      val completedCb = getAsyncCallback[Option[VSFile]]({
-        case Some(vsfile)=>
-          logger.info(vsfile.toString)
-          push(out, vsfile)
-          listQueue = listQueue.tail
-        case None=>
-          complete(out)
-      })
-
-      val failedCb = getAsyncCallback[Throwable](err=>failStage(err))
-
       override def onPull(): Unit = {
         if(listQueue.isEmpty) {
           logger.debug(s"Getting next page of results...")

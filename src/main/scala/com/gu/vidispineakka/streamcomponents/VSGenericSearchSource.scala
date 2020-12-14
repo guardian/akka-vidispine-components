@@ -65,6 +65,10 @@ abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:St
     private var queue:Seq[T] = Seq()
     private var currentItem = 1 //VS starts enumerating from 1 not 0
 
+    val failedCb = createAsyncCallback[Throwable](err=>failStage(err))
+    val newItemCb = createAsyncCallback[T](item=>push(out, item))
+    val completedCb = createAsyncCallback[Unit](_=>complete(out))
+
     /**
       * implicit conversion from a lambda function to a Runnable (see https://stackoverflow.com/questions/3073677/implicit-conversion-to-runnable)
       * this is used for actorSystem.scheduler.scheduleOnce, below
@@ -109,10 +113,6 @@ abstract class VSGenericSearchSource[T](metadataFields:Seq[String], searchDoc:St
     }
 
     setHandler(out, new AbstractOutHandler {
-      val failedCb = createAsyncCallback[Throwable](err=>failStage(err))
-      val newItemCb = createAsyncCallback[T](item=>push(out, item))
-      val completedCb = createAsyncCallback[Unit](_=>complete(out))
-
       override def onPull(): Unit = {
         processPull(failedCb, newItemCb, completedCb)
       }
