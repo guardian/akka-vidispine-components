@@ -27,7 +27,8 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-core" % "4.6.0" % Test,
   "org.specs2" %% "specs2-mock" % "4.6.0" % Test,
   //Fix vulnerable Netty
-  "io.netty" % "netty-codec-http" % "4.1.59.Final"
+  "io.netty" % "netty-codec-http" % "4.1.59.Final",
+  "io.netty" % "netty-handler" % "4.1.59.Final",
 )
 
 // POM settings for Sonatype
