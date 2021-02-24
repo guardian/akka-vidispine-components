@@ -1,10 +1,10 @@
 name := "akka-vidispine-components"
 
-version := "0.9"
+version := "1.0.0-RC1"
 
 scalaVersion := "2.12.10"
 
-val akkaVersion = "2.5.23"
+val akkaVersion = "2.5.31"
 val circeVersion = "0.13.0"
 val slf4jVersion = "1.7.25"
 val sttpVersion = "1.7.2"
@@ -21,11 +21,14 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % slf4jVersion,
   "com.softwaremill.sttp" %% "core" % sttpVersion,
   "com.softwaremill.sttp" %% "async-http-client-backend-future" % sttpVersion,
-  "org.asynchttpclient" % "async-http-client" % "2.0.37",
+  "org.asynchttpclient" % "async-http-client" % "2.12.2",
   "com.softwaremill.sttp" %% "akka-http-backend" % sttpVersion,
   "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
   "org.specs2" %% "specs2-core" % "4.6.0" % Test,
   "org.specs2" %% "specs2-mock" % "4.6.0" % Test,
+  //Fix vulnerable Netty
+  "io.netty" % "netty-codec-http" % "4.1.59.Final",
+  "io.netty" % "netty-handler" % "4.1.59.Final",
 )
 
 // POM settings for Sonatype
