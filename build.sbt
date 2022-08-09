@@ -5,7 +5,7 @@ version := "1.0.0-RC1"
 scalaVersion := "2.12.10"
 
 val akkaVersion = "2.5.31"
-val circeVersion = "0.13.0"
+val circeVersion = "0.14.2"
 val slf4jVersion = "1.7.25"
 val sttpVersion = "1.7.2"
 
@@ -27,8 +27,8 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-core" % "4.6.0" % Test,
   "org.specs2" %% "specs2-mock" % "4.6.0" % Test,
   //Fix vulnerable Netty
-  "io.netty" % "netty-codec-http" % "4.1.59.Final",
-  "io.netty" % "netty-handler" % "4.1.59.Final",
+  "io.netty" % "netty-codec-http" % "4.1.77.Final",
+  "io.netty" % "netty-handler" % "4.1.77.Final",
 )
 
 // POM settings for Sonatype
